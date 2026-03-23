@@ -12,7 +12,9 @@ function App() {
   useEffect(() => {
     let mounted = true;
 
-    const syncUserFromSession = async () => {
+    const syncUser = async () => {
+      await initializeAuth();
+
       const { data } = await supabase.auth.getSession();
       const sessionUser = data.session?.user;
 
@@ -40,12 +42,7 @@ function App() {
       setLoading(false);
     };
 
-    const boot = async () => {
-      await initializeAuth();
-      await syncUserFromSession();
-    };
-
-    boot();
+    syncUser();
 
     const {
       data: { subscription },
