@@ -12,33 +12,37 @@ function App() {
   useEffect(() => {
     let mounted = true;
 
-    const boot = async () => {
-      await initializeAuth();
-
-      const { data } = await supabase.auth.getUser();
+    const syncUserFromSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      const sessionUser = data.session?.user;
 
       if (!mounted) return;
 
-      if (data.user) {
-        const email = data.user.email || '';
+      if (sessionUser) {
+        const email = sessionUser.email || '';
         const username =
-          data.user.user_metadata?.username ||
+          sessionUser.user_metadata?.username ||
           email.split('@')[0] ||
           'Player';
 
         setUser({
-          id: data.user.id,
+          id: sessionUser.id,
           email,
           username,
           role: email.toLowerCase() === 'yousefch1978@gmail.com' ? 'admin' : 'user',
-          balance: Number(data.user.user_metadata?.balance ?? 0),
-          createdAt: data.user.created_at || new Date().toISOString(),
+          balance: Number(sessionUser.user_metadata?.balance ?? 0),
+          createdAt: sessionUser.created_at || new Date().toISOString(),
         });
       } else {
         setUser(null);
       }
 
       setLoading(false);
+    };
+
+    const boot = async () => {
+      await initializeAuth();
+      await syncUserFromSession();
     };
 
     boot();
@@ -48,20 +52,22 @@ function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
 
-      if (session?.user) {
-        const email = session.user.email || '';
+      const sessionUser = session?.user;
+
+      if (sessionUser) {
+        const email = sessionUser.email || '';
         const username =
-          session.user.user_metadata?.username ||
+          sessionUser.user_metadata?.username ||
           email.split('@')[0] ||
           'Player';
 
         setUser({
-          id: session.user.id,
+          id: sessionUser.id,
           email,
           username,
           role: email.toLowerCase() === 'yousefch1978@gmail.com' ? 'admin' : 'user',
-          balance: Number(session.user.user_metadata?.balance ?? 0),
-          createdAt: session.user.created_at || new Date().toISOString(),
+          balance: Number(sessionUser.user_metadata?.balance ?? 0),
+          createdAt: sessionUser.created_at || new Date().toISOString(),
         });
       } else {
         setUser(null);
