@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore, initializeAuth } from './store/authStore';
 import { supabase } from './lib/supabase';
-import Auth from './pages/Auth';
-import Home from './pages/Home';
-import Admin from './pages/Admin';
-import Dashboard from './pages/Dashboard';
+import AuthPage from './pages/AuthPage';
+import HomePage from './pages/HomePage';
+import AdminPage from './pages/AdminPage';
 
 function App() {
   const { user, isAuthenticated, setUser } = useAuthStore();
@@ -86,14 +85,14 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <Auth />;
+    return <AuthPage />;
   }
 
   if (user?.role === 'admin') {
-    return <Admin />;
+    return <AdminPage />;
   }
 
-  return <Dashboard />;
+  return <HomePage />;
 }
 
 export default App;
