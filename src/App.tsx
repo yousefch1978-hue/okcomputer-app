@@ -76,23 +76,34 @@ function App() {
     };
   }, [setUser]);
 
+  const handlePageChange = (_page: string) => {};
+
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#fff' }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#000',
+          color: '#fff',
+        }}
+      >
         Loading...
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return <AuthPage onPageChange={() => {}} />;
+    return <AuthPage onPageChange={handlePageChange} />;
   }
 
   if (user?.role === 'admin') {
-    return <AdminPage />;
+    return <AdminPage onPageChange={handlePageChange} />;
   }
 
-  return <HomePage />;
+  return <HomePage onPageChange={handlePageChange} />;
 }
 
 export default App;
