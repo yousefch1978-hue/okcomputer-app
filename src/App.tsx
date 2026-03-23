@@ -85,7 +85,7 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <AuthPage />;
+    return <AuthPage onPageChange={() => {}} />;
   }
 
   if (user?.role === 'admin') {
