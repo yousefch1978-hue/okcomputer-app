@@ -1,0 +1,70 @@
+{
+  "users": [
+    {
+      "id": "admin-001",
+      "email": "yousefch1978@gmail.com",
+      "username": "Admin",
+      "password": "hash_5831b642",
+      "role": "admin",
+      "balance": 0,
+      "createdAt": "2026-03-23T00:00:00.000Z"
+    },
+    {
+      "id": "user-1774244565831",
+      "email": "kaasjaap620@gmail.com",
+      "username": "ezzgame",
+      "password": "hash_5831b642",
+      "role": "user",
+      "balance": 0,
+      "createdAt": "2026-03-23T05:42:45.831Z"
+    }
+  ],
+  "sessions": {
+    "159d787b-06b9-4c93-ba2d-3336dbbf1cd9": "user-1774244565831"
+  },
+  "transactions": [],
+  "withdrawals": [
+    {
+      "id": "wd-1774244483095",
+      "userId": "admin-001",
+      "username": "Admin",
+      "email": "yousefch1978@gmail.com",
+      "amount": 10,
+      "cryptoType": "BTC",
+      "walletAddress": "1e1e1e1e1",
+      "status": "approved",
+      "createdAt": "2026-03-23T05:41:23.095Z",
+      "processedAt": "2026-03-23T05:41:33.065Z",
+      "processedBy": "admin-001"
+    }
+  ],
+  "promoCodes": [
+    {
+      "id": "promo-1774244382979",
+      "code": "NEON5",
+      "amount": 5,
+      "usesLeft": 49,
+      "totalUses": 50,
+      "createdAt": "2026-03-23T05:39:42.979Z",
+      "createdBy": "Admin"
+    }
+  ],
+  "usedCodes": {
+    "user-1774244565831": [
+      "promo-1774244382979"
+    ]
+  },
+  "chat": {
+    "global": [
+      {
+        "id": "msg-1774244398101",
+        "userId": "admin-001",
+        "username": "Admin",
+        "message": "hiii",
+        "timestamp": "2026-03-23T05:39:58.101Z",
+        "isAdmin": true
+      }
+    ],
+    "support": []
+  }
+}
