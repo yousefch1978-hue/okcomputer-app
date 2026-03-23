@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Toaster } from '@/components/ui/toaster';
-import { useAuthStore, initializeAuth } from '@/store/authStore';
-import { supabase } from '@/lib/supabase';
-import Index from '@/pages/Index';
+import { useAuthStore, initializeAuth } from './store/authStore';
+import { supabase } from './lib/supabase';
+import Auth from './pages/Auth';
+import Home from './pages/Home';
+import Admin from './pages/Admin';
+import Dashboard from './pages/Dashboard';
 
 function App() {
-  const { setUser } = useAuthStore();
+  const { user, isAuthenticated, setUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,35 +18,35 @@ function App() {
 
       const { data } = await supabase.auth.getUser();
 
-      if (mounted) {
-        if (data.user) {
-          const email = data.user.email || '';
-          const username =
-            data.user.user_metadata?.username ||
-            email.split('@')[0] ||
-            'Player';
+      if (!mounted) return;
 
-          setUser({
-            id: data.user.id,
-            email,
-            username,
-            role: email.toLowerCase() === 'yousefch1978@gmail.com' ? 'admin' : 'user',
-            balance: Number(data.user.user_metadata?.balance ?? 0),
-            createdAt: data.user.created_at || new Date().toISOString(),
-          });
-        } else {
-          setUser(null);
-        }
+      if (data.user) {
+        const email = data.user.email || '';
+        const username =
+          data.user.user_metadata?.username ||
+          email.split('@')[0] ||
+          'Player';
 
-        setLoading(false);
+        setUser({
+          id: data.user.id,
+          email,
+          username,
+          role: email.toLowerCase() === 'yousefch1978@gmail.com' ? 'admin' : 'user',
+          balance: Number(data.user.user_metadata?.balance ?? 0),
+          createdAt: data.user.created_at || new Date().toISOString(),
+        });
+      } else {
+        setUser(null);
       }
+
+      setLoading(false);
     };
 
     boot();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
 
       if (session?.user) {
@@ -77,18 +79,21 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#fff' }}>
         Loading...
       </div>
     );
   }
 
-  return (
-    <>
-      <Index />
-      <Toaster />
-    </>
-  );
+  if (!isAuthenticated) {
+    return <Auth />;
+  }
+
+  if (user?.role === 'admin') {
+    return <Admin />;
+  }
+
+  return <Dashboard />;
 }
 
 export default App;
