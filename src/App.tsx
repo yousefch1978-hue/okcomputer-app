@@ -4,10 +4,14 @@ import { supabase } from './lib/supabase';
 import AuthPage from './pages/AuthPage';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
+import RankingsPage from './pages/RankingsPage';
+
+type Page = 'auth' | 'home' | 'admin' | 'rankings';
 
 function App() {
   const { user, isAuthenticated, setUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<Page>('auth');
 
   useEffect(() => {
     let mounted = true;
@@ -27,16 +31,20 @@ function App() {
           email.split('@')[0] ||
           'Player';
 
-        setUser({
+        const appUser = {
           id: sessionUser.id,
           email,
           username,
           role: email.toLowerCase() === 'yousefch1978@gmail.com' ? 'admin' : 'user',
           balance: Number(sessionUser.user_metadata?.balance ?? 0),
           createdAt: sessionUser.created_at || new Date().toISOString(),
-        });
+        };
+
+        setUser(appUser);
+        setCurrentPage(appUser.role === 'admin' ? 'admin' : 'home');
       } else {
         setUser(null);
+        setCurrentPage('auth');
       }
 
       setLoading(false);
@@ -58,16 +66,20 @@ function App() {
           email.split('@')[0] ||
           'Player';
 
-        setUser({
+        const appUser = {
           id: sessionUser.id,
           email,
           username,
           role: email.toLowerCase() === 'yousefch1978@gmail.com' ? 'admin' : 'user',
           balance: Number(sessionUser.user_metadata?.balance ?? 0),
           createdAt: sessionUser.created_at || new Date().toISOString(),
-        });
+        };
+
+        setUser(appUser);
+        setCurrentPage(appUser.role === 'admin' ? 'admin' : 'home');
       } else {
         setUser(null);
+        setCurrentPage('auth');
       }
 
       setLoading(false);
@@ -79,7 +91,19 @@ function App() {
     };
   }, [setUser]);
 
-  const handlePageChange = (_page: string) => {};
+  const handlePageChange = (page: string) => {
+    if (page === 'auth' || page === 'home' || page === 'admin' || page === 'rankings') {
+      setCurrentPage(page);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setCurrentPage('auth');
+      return;
+    }
+
+    setCurrentPage(user?.role === 'admin' ? 'admin' : 'home');
+  };
 
   if (loading) {
     return (
@@ -98,11 +122,15 @@ function App() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || currentPage === 'auth') {
     return <AuthPage onPageChange={handlePageChange} />;
   }
 
-  if (user?.role === 'admin') {
+  if (currentPage === 'rankings') {
+    return <RankingsPage onPageChange={handlePageChange} />;
+  }
+
+  if (user?.role === 'admin' || currentPage === 'admin') {
     return <AdminPage onPageChange={handlePageChange} />;
   }
 
