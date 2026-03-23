@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
 
 type Role = 'admin' | 'user';
 
-type User = {
+export type User = {
   id: string;
   email: string;
   username: string;
@@ -55,12 +55,14 @@ function toAppUser(supabaseUser: any): User {
   };
 }
 
-export const useAuthStore = create<AuthStore>()((set, get) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
 
   async login(email, password) {
+    set({ isLoading: true });
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -68,19 +70,28 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       });
 
       if (error || !data.user) {
+        set({ isLoading: false, user: null, isAuthenticated: false });
         return { success: false, error: error?.message || 'Login failed' };
       }
 
       const user = toAppUser(data.user);
-      set({ user, isAuthenticated: true });
+
+      set({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
 
       return { success: true, isAdmin: user.role === 'admin' };
     } catch (error: any) {
-      return { success: false, error: error.message || 'Login failed' };
+      set({ isLoading: false, user: null, isAuthenticated: false });
+      return { success: false, error: error?.message || 'Login failed' };
     }
   },
 
   async register(email, password, username) {
+    set({ isLoading: true });
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -94,27 +105,45 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       });
 
       if (error || !data.user) {
+        set({ isLoading: false });
         return { success: false, error: error?.message || 'Registration failed' };
       }
 
-      const user = toAppUser(data.user);
-      set({
-        user,
-        isAuthenticated: !!data.session || !!data.user,
-      });
+      // Only treat signup as logged-in if Supabase returned a real session
+      if (data.session) {
+        const user = toAppUser(data.user);
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      } else {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
+      }
 
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message || 'Registration failed' };
+      set({ isLoading: false, user: null, isAuthenticated: false });
+      return { success: false, error: error?.message || 'Registration failed' };
     }
   },
 
   async logout() {
+    set({ isLoading: true });
+
     try {
       await supabase.auth.signOut();
     } catch {}
 
-    set({ user: null, isAuthenticated: false });
+    set({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    });
   },
 
   async updateBalance(amount) {
@@ -142,7 +171,10 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   },
 
   setUser(user) {
-    set({ user, isAuthenticated: !!user });
+    set({
+      user,
+      isAuthenticated: !!user,
+    });
   },
 
   isAdmin() {
@@ -151,19 +183,28 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
 
   async refreshUser() {
     try {
-      const { data, error } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getSession();
 
-      if (error || !data.user) {
-        set({ user: null, isAuthenticated: false });
+      if (error || !data.session?.user) {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
         return;
       }
 
       set({
-        user: toAppUser(data.user),
+        user: toAppUser(data.session.user),
         isAuthenticated: true,
+        isLoading: false,
       });
     } catch {
-      set({ user: null, isAuthenticated: false });
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
     }
   },
 }));
